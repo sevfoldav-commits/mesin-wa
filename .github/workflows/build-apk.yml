@@ -5,6 +5,7 @@ on:
     branches: [ main, master ]
     paths:
       - 'wa-pro-apk/**'
+      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
 jobs:
@@ -23,17 +24,23 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Make gradlew executable
-        run: chmod +x gradlew
+      - name: Accept SDK licenses & install platform
+        run: |
+          # Accept all licenses
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses 2>&1 | tail -3
+          # Ensure required platform is installed
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platforms;android-34" "build-tools;34.0.0" 2>&1 | tail -5
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: |
+          chmod +x gradlew
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+          ./gradlew assembleDebug 2>&1 | tail -30
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+          ./gradlew assembleRelease 2>&1 | tail -10
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
