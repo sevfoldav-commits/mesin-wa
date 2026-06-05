@@ -11,9 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: wa-pro-apk
 
     steps:
       - uses: actions/checkout@v4
@@ -26,26 +23,18 @@ jobs:
 
       - name: Accept SDK licenses & install platform
         run: |
-          # Accept all licenses
           yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses 2>&1 | tail -3
-          # Ensure required platform is installed
           yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platforms;android-34" "build-tools;34.0.0" 2>&1 | tail -5
 
       - name: Build Debug APK
+        working-directory: wa-pro-apk
         run: |
           chmod +x gradlew
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-          ./gradlew assembleDebug 2>&1 | tail -30
+          ./gradlew assembleDebug 2>&1
 
-      - name: Build Release APK
-        run: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-          ./gradlew assembleRelease 2>&1 | tail -10
-
-      - name: Upload APKs
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Mesin-WA-APK
-          path: |
-            wa-pro-apk/app/build/outputs/apk/debug/*.apk
-            wa-pro-apk/app/build/outputs/apk/release/*.apk
+          path: wa-pro-apk/app/build/outputs/apk/debug/*.apk

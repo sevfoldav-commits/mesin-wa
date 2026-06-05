@@ -13,13 +13,13 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.WAToolsPro"
+        android:theme="@style/Theme.MesinWA"
         android:usesCleartextTraffic="true">
 
         <activity
             android:name=".ui.SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.WAToolsPro.Splash">
+            android:theme="@style/Theme.MesinWA.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
