@@ -104,6 +104,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     private void loadSessions() {
         List<SessionModel> sessions = sessionManager.getSessions();
+        View emptyState = findViewById(R.id.emptyState);
+        if (emptyState != null) {
+            emptyState.setVisibility(sessions.isEmpty() ? View.VISIBLE : View.GONE);
+        }
+        rvSessions.setVisibility(sessions.isEmpty() ? View.GONE : View.VISIBLE);
         adapter = new SessionAdapter(sessions);
         rvSessions.setAdapter(adapter);
     }
