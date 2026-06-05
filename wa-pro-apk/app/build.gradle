@@ -14,10 +14,29 @@ android {
         versionName '1.0.0'
     }
 
+    signingConfigs {
+        debug {
+            storeFile file('../debug.keystore')
+            storePassword 'android'
+            keyAlias 'mesinwa'
+            keyPassword 'android'
+        }
+        release {
+            storeFile file('../debug.keystore')
+            storePassword 'android'
+            keyAlias 'mesinwa'
+            keyPassword 'android'
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            signingConfig signingConfigs.release
         }
     }
 
