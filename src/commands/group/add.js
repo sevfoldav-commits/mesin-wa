@@ -1,15 +1,22 @@
-export default {
-    name: 'add',
-    aliases: ['+'],
-    type: 'group',
-    desc: 'add participants to group',
-    execute: async({ hisoka, m }) => {
-        let users = m.text.split`,`.map(a => (a.replace(/[^0-9]/g, '')).replace(/\D/g, '') + '@c.us')
-        if (users.length == 0) return m.reply('No Query')
-        let chat = await m.getChat()
-        await chat.addParticipants(users)
-    },
-    isGroup: true,
-    isAdmin: true,
-    isBotAdmin: true
-}
+import { command } from '../../utils/command-builder.js'
+
+export default command({
+  name: 'add',
+  aliases: ['+'],
+  type: 'group',
+  desc: 'Add participants to group',
+  isGroup: true,
+  isAdmin: true,
+  isBotAdmin: true,
+  execute: async ({ hisoka, m }) => {
+    const users = m.text
+      .split(',')
+      .map((a) => a.replace(/[^0-9]/g, '') + '@s.whatsapp.net')
+      .filter((a) => a.includes('@s.whatsapp.net'))
+
+    if (users.length === 0) return m.reply('Masukkan nomor target, pisahkan dengan koma')
+
+    await hisoka.groupParticipantsUpdate(m.from, users, 'add')
+    m.reply(`✅ Berhasil menambahkan ${users.length} peserta`)
+  }
+})

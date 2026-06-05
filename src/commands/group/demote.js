@@ -1,15 +1,24 @@
-export default {
-    name: 'demote',
-    aliases: ['unadmin'],
-    type: 'group',
-    desc: 'demote participants to group',
-    execute: async({ m }) => {
-        let users = m.mentions.length !== 0 ? m.mentions.filter((_, index) => index < 3) : m.hasQuotedMsg ? [m.quoted.sender] : m.text.split`,`.map(v => v.replace(/[^0-9]/g, '') + "@c.us").filter((_, index) => index < 3)
-        if (users.length == 0) return m.reply('No Query')
-        let chat = await m.getChat()
-        await chat.demoteParticipants(users)
-    },
-    isGroup: true,
-    isAdmin: true,
-    isBotAdmin: true
-}
+import { command } from '../../utils/command-builder.js'
+
+export default command({
+  name: 'demote',
+  aliases: ['dm'],
+  type: 'group',
+  desc: 'Demote admin to member',
+  isGroup: true,
+  isAdmin: true,
+  isBotAdmin: true,
+  execute: async ({ hisoka, m }) => {
+    const users = m.mentions.length
+      ? m.mentions
+      : m.text
+          .split(',')
+          .map((a) => a.replace(/[^0-9]/g, '') + '@s.whatsapp.net')
+          .filter((a) => a.includes('@s.whatsapp.net'))
+
+    if (users.length === 0) return m.reply('Tag atau masukkan nomor target')
+
+    await hisoka.groupParticipantsUpdate(m.from, users, 'demote')
+    m.reply(`✅ Berhasil menurunkan ${users.length} peserta dari admin`)
+  }
+})

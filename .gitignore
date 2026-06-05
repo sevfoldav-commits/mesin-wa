@@ -1,4 +1,12 @@
-/node_modules
-/package-lock.json
-/session
-/.git
+node_modules/
+session/
+sessions/
+temp/
+*.zip
+.env
+.DS_Store
+local.properties
+.gradle/
+build/
+*.iml
+.idea/

@@ -1,0 +1,2 @@
+rootProject.name = 'WAToolsPro'
+include ':app'

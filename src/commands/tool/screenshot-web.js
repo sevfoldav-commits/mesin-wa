@@ -1,51 +1,53 @@
 import playwright from 'playwright-chromium'
+import { command } from '../../utils/command-builder.js'
 
+export default command({
+  name: 'ssweb',
+  aliases: ['screenshotweb', 'screenshot'],
+  type: 'tool',
+  desc: 'Screenshot website\nExample: %prefix%command https://google.com',
+  example: 'No Urls!?\n\nExample %prefix%command https://google.com',
+  execute: async ({ hisoka, m }) => {
+    const url = Func.isUrl(m.text)[0]
+    if (!url) return m.reply('Masukkan URL!')
 
-export default {
-     name: "ssweb",
-     aliases: ["screenshotweb", "screenshot"],
-     type: 'tool',
-     desc: "screenshot website",
-     example: "No Urls!?\n\nExample %prefix%command https://google.com",
-     execute: async ({ hisoka, m }) => {
-          m.reply("wait")
-          const browser = await hisoka.pupBrowser || await getBrowser()
+    await m.reply('⏱ Membuka halaman...')
 
-          // create a new page
-          const page = await browser.newPage()
-          /*
-          let device = /mobile=/i.test(m.text.toLowerCase()) ? m.text.split`mobile='`[1].split`'`[0] : 'iPhone 12 Pro Max'
-          if (!(device in a.devices)) return m.reply(`Device type is not supported\n\nList :\n${Object.keys(a.devices).join('\n')}`)
-          if (/mobile/i.test(m.text.toLowerCase())) await page.emulate(a.devices[device])
-          */
-          // option
-          await page.goto(Func.isUrl(m.text)[0])
+    try {
+      const browser = await getBrowser()
+      const page = await browser.newPage()
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 })
 
-          // Capture
-          if (/full/i.test(m.text.toLowerCase())) await page.waitForTimeout(15000)
-          let media = await page.screenshot({ fullPage: /full/i.test(m.text.toLowerCase()) ? true : false })
+      if (/full/i.test(m.text)) {
+        await page.waitForTimeout(5000)
+      }
 
-          // send message
-          hisoka.sendMessage(m.from, media, { quoted: m })
-          await page.close()
-     }
-}
+      const media = await page.screenshot({
+        fullPage: /full/i.test(m.text.toLowerCase())
+      })
 
+      await hisoka.sendMessage(m.from, { image: media, caption: `🖼 *${url}*` }, { quoted: m })
+      await page.close()
+      await browser.close()
+    } catch (e) {
+      m.reply(`❌ Error: ${e.message}`)
+    }
+  }
+})
 
 async function getBrowser(opts = {}) {
-     const chrome = {
-          headless: true,
-          args: [
-               '--no-sandbox',
-               '--no-first-run',
-               '--no-default-browser-check',
-               '--disable-setuid-sandbox',
-               '--disable-accelerated-2d-canvas',
-               '--disable-session-crashed-bubble',
-               '--start-maximied',
-               '--enable-features=WebContentsForceDark:inversion_method/cielab_based/image_behavior/selective/text_lightness_threshold/150/background_lightness_threshold/205'
-          ],
-          ...opts
-     }
-     return await playwright.chromium.launch(chrome)
+  const chrome = {
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--disable-setuid-sandbox',
+      '--disable-accelerated-2d-canvas',
+      '--disable-session-crashed-bubble',
+      '--start-maximied'
+    ],
+    ...opts
+  }
+  return await playwright.chromium.launch(chrome)
 }

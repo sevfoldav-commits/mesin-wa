@@ -1,123 +1,89 @@
-import config from "../config.js"
-
-import { LocalAuth } from 'whatsapp-web.js'
-import qrcode from "qrcode-terminal"
-import chokidar from "chokidar"
-import { chromium } from 'playwright-chromium'
-import { platform } from 'os'
+/**
+ * Main bot entry — initializes Baileys, database, and modules.
+ */
+import config from '../config.js'
 import path from 'path'
-import API from "./lib/lib.api.js"
+import { fileURLToPath } from 'url'
+import API from './lib/lib.api.js'
+import Function from './lib/lib.function.js'
+import { Message, readCommands } from './event/event.message.js'
+import DatabaseService from './database/index.js'
+import logger from './utils/logger.js'
+import { createBot } from './core/bot.js'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-import Function from "./lib/lib.function.js"
-import { Client, serialize } from "./lib/whatsapp.serialize.js"
-import { Message, readCommands } from "./event/event.message.js"
-import { database as databes } from "./lib/lib.database.js"
-
-
-const database = new databes()
+// Global modules
 global.Func = Function
 global.api = API
-global.commands = new (await import("./lib/lib.collection.js")).default
+global.commands = new ((await import('./lib/lib.collection.js')).default)()
+global.dbService = null
+global.hisoka = null
 
-
-async function start() {
-    process.on("uncaughtException", console.error)
-    process.on("unhandledRejection", console.error)
-    readCommands()
-
-    const content = await database.read()
-    if (content && Object.keys(content).length === 0) {
-        global.db = {
-            users: {},
-            groups: {},
-            ...(content || {})
+/**
+ * Watch commands directory for hot-reload.
+ */
+function watchCommands() {
+  import('chokidar').then(({ default: chokidar }) => {
+    const watchDir = Func.__filename(path.join(process.cwd(), 'src', 'commands'))
+    const watcher = chokidar.watch(watchDir, { ignored: /^\./ })
+    watcher
+      .on('change', async (p) => {
+        try {
+          const cmd = await import(Func.__filename(p) + '?v=' + Date.now())
+          if (cmd?.default?.name) {
+            global.commands.set(cmd.default.name, cmd)
+            logger.debug(`Hot-reloaded: ${cmd.default.name}`)
+          }
+        } catch (e) {
+          logger.error(`Failed to reload:`, e.message)
         }
-        await database.write(global.db)
-    } else {
-        global.db = content
-    }
-
-    const hisoka = new Client({
-        authStrategy: new LocalAuth({
-            dataPath: `./${config.session.Path}`,
-            clientId: `${config.session.Name}`
-        }),
-        playwright: {
-            headless: true,
-            devtools: false,
-            args: [
-                '--aggressive-tab-discard',
-                '--disable-accelerated-2d-canvas',
-                '--disable-application-cache',
-                '--disable-cache',
-                '--disable-dev-shm-usage',
-                '--disable-gpu',
-                '--disable-offline-load-stale-cache',
-                '--disable-setuid-sandbox',
-                '--disable-setuid-sandbox',
-                '--disk-cache-size=0',
-                '--ignore-certificate-errors',
-                '--no-first-run',
-                '--no-sandbox',
-                '--no-zygote',
-                //'--enable-features=WebContentsForceDark:inversion_method/cielab_based/image_behavior/selective/text_lightness_threshold/150/background_lightness_threshold/205'
-            ],
-            executablePath: platform() === 'win32' ? chromium.executablePath() : platform() === "linux" ? '/usr/bin/google-chrome-stable' : '',
-            bypassCSP: true
-        },
-        markOnlineAvailable: true,
-        qrMaxRetries: 2,
-        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/603.2.4 (KHTML, like Gecko) Version/11.1.2 Safari/603.2.4',
-        takeoverTimeoutMs: 'Infinity',
-        autoClearSession: true
-    })
-
-    hisoka.initialize()
-
-    hisoka.on("qr", qr => {
-        console.info("Loading QR Code for WhatsApp, Please Scan...")
-        qrcode.generate(qr, { small: true })
-    })
-
-    hisoka.on("loading_screen", (percent, message) => {
-        console.log(chalk.bgBlack(chalk.green(message)) + " :" + chalk.bgBlack(chalk.yellow(percent)))
-    })
-
-    hisoka.on("auth_failure", console.error)
-
-    hisoka.on("ready", m => {
-        console.info("Client is already on ")
-    })
-
-    hisoka.on("disconnected", m => {
-        if (m) start()
-    })
-
-    hisoka.on("message_create", async (message) => {
-        const m = await (await serialize(hisoka, message))
-        await (await Message(hisoka, m))
-    })
-
-    // rewrite database every 30 seconds
-    setInterval(async () => {
-        if (global.db) await database.write(global.db)
-    }, 3000)
-
-    return hisoka
+      })
+  }).catch(() => {})
 }
 
+/**
+ * Start the bot.
+ */
+async function start() {
+  process.on('uncaughtException', (err) => logger.error('Uncaught Exception:', err.message))
+  process.on('unhandledRejection', (err) => logger.error('Unhandled Rejection:', err.message))
 
-start()
+  try {
+    // 1. Load commands
+    logger.info('Loading commands...')
+    await readCommands()
+    logger.info(`Loaded ${global.commands.size} commands`)
 
+    // 2. Start watcher for hot-reload (only monitors changes, not initial add)
+    watchCommands()
 
-let choki = chokidar.watch(Func.__filename(path.join(process.cwd(), 'src', 'commands')), { ignored: /^\./ })
-choki
-.on('change', async(Path) => {
-    const command = await import(Func.__filename(Path) + "?v=" + Date.now())
-    global.commands.set(command?.default?.name, command)
-})
-.on('add', async function(Path) {
-    const command = await import(Func.__filename(Path) + "?v=" + Date.now())
-    global.commands.set(command?.default?.name, command)
-})
+    // 3. Initialize database
+    logger.info('Initializing database...')
+    const db = new DatabaseService()
+    global.dbService = db
+    await db.connect()
+
+    // 4. Periodically save DB & reset limits
+    setInterval(() => db.resetDailyLimits(), 3600000)
+    setInterval(() => {
+      if (db.connected) db.flush().catch(() => {})
+    }, 30000)
+
+    // 5. Start Baileys bot
+    logger.info('Starting Baileys...')
+    const hisoka = await createBot()
+    global.hisoka = hisoka
+
+    logger.info('Bot is running!')
+    return hisoka
+  } catch (e) {
+    logger.error('Failed to start bot:', e.message)
+    logger.info('Retrying in 10 seconds...')
+    setTimeout(start, 10000)
+  }
+}
+
+start().catch((e) => logger.error('Startup error:', e.message))
+
+export default { start }

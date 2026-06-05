@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mesin-WA — Multi WhatsApp Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-bg {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    }
+    .gradient-primary {
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 50%, #075E54 100%);
+    }
+    .gradient-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .gradient-hero {
+      background: radial-gradient(ellipse at 20% 50%, rgba(37,211,102,0.15) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 20%, rgba(18,140,126,0.1) 0%, transparent 50%),
+                  linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    }
+    .glow-green {
+      box-shadow: 0 0 40px rgba(37,211,102,0.15);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(37,211,102,0.3);
+    }
+    .feature-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .pricing-card {
+      transition: all 0.3s ease;
+    }
+    .pricing-card:hover {
+      transform: translateY(-8px);
+    }
+    .pricing-popular {
+      background: linear-gradient(145deg, rgba(37,211,102,0.1) 0%, rgba(18,140,126,0.05) 100%);
+      border: 2px solid #25D366;
+    }
+    .nav-blur {
+      backdrop-filter: blur(20px);
+      background: rgba(15,23,42,0.8);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .phone-mockup {
+      background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 40px;
+      padding: 12px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    }
+    .phone-screen {
+      border-radius: 28px;
+      overflow: hidden;
+      background: #0f172a;
+    }
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    html { scroll-behavior: smooth; }
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 16px 24px;
+      border-radius: 12px;
+      z-index: 999;
+      transition: all 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-[#0f172a] text-white">
+  <div id="app">
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-0 right-0 z-50 nav-blur" :class="{ 'shadow-lg': scrolled }">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-white font-bold text-sm">W</div>
+            <span class="font-bold text-lg">Mesin-WA <span class="text-[#25D366]">Pro</span></span>
+          </div>
+          <div class="hidden md:flex items-center gap-8">
+            <a v-for="item in navItems" :key="item.id" :href="item.href" class="text-sm text-gray-300 hover:text-[#25D366] transition-colors">{{ item.label }}</a>
+            <a href="#pricing" class="btn-primary px-5 py-2 rounded-full text-sm font-semibold">Beli Sekarang</a>
+          </div>
+          <button @click="mobileMenu = !mobileMenu" class="md:hidden p-2 rounded-lg hover:bg-white/10">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <!-- Mobile menu -->
+      <div v-show="mobileMenu" class="md:hidden border-t border-white/10">
+        <div class="px-4 py-4 space-y-3">
+          <a v-for="item in navItems" :key="item.id" :href="item.href" class="block text-gray-300 hover:text-[#25D366] py-2" @click="mobileMenu = false">{{ item.label }}</a>
+          <a href="#pricing" class="block btn-primary text-center px-5 py-2 rounded-full text-sm font-semibold">Beli Sekarang</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="gradient-hero min-h-screen flex items-center pt-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+          <div class="space-y-8">
+            <div class="inline-flex items-center gap-2 bg-[#25D366]/10 text-[#25D366] px-4 py-2 rounded-full text-sm font-medium">
+              <span class="w-2 h-2 bg-[#25D366] rounded-full animate-pulse"></span>
+              WhatsApp Multi-Device Ready
+            </div>
+            <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">
+              Kelola <span class="text-[#25D366]">Banyak WhatsApp</span>
+              <br>Dalam Satu Aplikasi
+            </h1>
+            <p class="text-lg text-gray-400 leading-relaxed max-w-lg">
+              Aplikasi Android untuk mengelola banyak akun WhatsApp sekaligus. 
+              Fitur Blast pesan, Pairing Code, Dashboard, dan integrasi IVASMS 
+              untuk auto-register nomor baru.
+            </p>
+            <div class="flex flex-wrap gap-4">
+              <a href="#pricing" class="btn-primary px-8 py-3.5 rounded-full text-base font-semibold inline-flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Beli Aplikasi
+              </a>
+              <a href="#features" class="px-8 py-3.5 rounded-full text-base font-semibold border border-white/20 hover:bg-white/5 transition inline-flex items-center gap-2">
+                Pelajari Fitur
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </a>
+            </div>
+            <div class="flex items-center gap-6 text-sm text-gray-500">
+              <div class="flex items-center gap-2">
+                <div class="flex -space-x-2">
+                  <div v-for="i in 4" :key="i" class="w-7 h-7 rounded-full bg-gradient-to-br from-[#25D366] to-[#128C7E] flex items-center justify-center text-[10px] font-bold border-2 border-[#0f172a]" :style="{ zIndex: 5-i }">{{ ['👤','👤','👤','👤'][i-1] }}</div>
+                </div>
+                <span class="text-gray-400">2.4K+ pengguna</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span v-for="i in 5" :key="i" class="text-yellow-400 text-sm">★</span>
+                <span class="text-gray-400 ml-1">4.9</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-center md:justify-end">
+            <div class="phone-mockup animate-float">
+              <div class="phone-screen w-[280px] md:w-[320px] p-4 space-y-3">
+                <!-- Mockup UI -->
+                <div class="flex items-center justify-between">
+                  <div class="w-5 h-5 rounded-full bg-[#25D366]"></div>
+                  <div class="text-xs text-gray-400 font-medium">Mesin-WA</div>
+                  <div class="flex gap-1">
+                    <div class="w-2 h-2 rounded-full bg-yellow-400"></div>
+                    <div class="w-2 h-2 rounded-full bg-green-400"></div>
+                  </div>
+                </div>
+                <!-- Sessions -->
+                <div class="space-y-2">
+                  <div class="text-[10px] text-gray-500 font-medium uppercase tracking-wider">WhatsApp Sessions</div>
+                  <div v-for="s in mockSessions" :key="s.name" class="flex items-center gap-3 p-2.5 rounded-xl" :class="s.bg">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm" :class="s.avatarBg">{{ s.emoji }}</div>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-sm font-medium truncate">{{ s.name }}</div>
+                      <div class="text-[10px] text-gray-500">{{ s.number }}</div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full" :class="s.online ? 'bg-green-400' : 'bg-gray-500'"></span>
+                      <span class="text-[10px]" :class="s.online ? 'text-green-400' : 'text-gray-500'">{{ s.online ? 'Active' : 'Offline' }}</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Bottom nav -->
+                <div class="flex justify-between pt-2 border-t border-white/10">
+                  <div v-for="tab in ['💬','📊','🔧','⚙️']" :key="tab" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" :class="tab === '💬' ? 'bg-[#25D366]/20' : 'hover:bg-white/5'">{{ tab }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="py-16 border-y border-white/5">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div v-for="s in stats" :key="s.label">
+            <div class="stat-number">{{ s.value }}</div>
+            <div class="text-sm text-gray-400 mt-1">{{ s.label }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 bg-[#25D366]/10 text-[#25D366] px-4 py-2 rounded-full text-sm font-medium mb-4">Fitur Unggulan</div>
+          <h2 class="text-3xl md:text-5xl font-bold mb-4">Semua yang Kamu Butuhkah</h2>
+          <p class="text-gray-400 max-w-2xl mx-auto">Kelola banyak akun WhatsApp dengan fitur lengkap dalam satu aplikasi Android premium.</p>
+        </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="(f, i) in features" :key="i" class="gradient-card p-6 rounded-2xl hover:border-[#25D366]/30 transition-all group">
+            <div class="feature-icon gradient-primary mb-4 text-white text-2xl">{{ f.icon }}</div>
+            <h3 class="text-lg font-semibold mb-2">{{ f.title }}</h3>
+            <p class="text-sm text-gray-400 leading-relaxed">{{ f.desc }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- IVASMS Section -->
+    <section class="py-24 bg-[#0a0f1a]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+          <div class="space-y-6">
+            <div class="inline-flex items-center gap-2 bg-purple-500/10 text-purple-400 px-4 py-2 rounded-full text-sm font-medium">Integrasi IVASMS</div>
+            <h2 class="text-3xl md:text-5xl font-bold">Auto Register <br><span class="text-purple-400">Nomor WhatsApp</span></h2>
+            <p class="text-gray-400 leading-relaxed">
+              Terintegrasi dengan API IVASMS untuk beli nomor virtual, terima OTP, 
+              dan daftar akun WhatsApp baru secara otomatis. Cocok untuk blasting 
+              dan manajemen banyak nomor.
+            </p>
+            <ul class="space-y-3">
+              <li v-for="item in ivasmsFeatures" :key="item" class="flex items-start gap-3 text-sm">
+                <span class="text-purple-400 mt-0.5">✓</span>
+                <span class="text-gray-300">{{ item }}</span>
+              </li>
+            </ul>
+          </div>
+          <div class="relative">
+            <div class="gradient-card p-8 rounded-2xl">
+              <div class="space-y-4">
+                <div class="flex items-center gap-3 text-sm text-gray-400">
+                  <span class="text-purple-400 font-semibold">ivasms.com</span>
+                  <span class="text-gray-600">|</span>
+                  <span>API Key: ••••••••</span>
+                </div>
+                <div class="space-y-3">
+                  <div v-for="log in ivasmsLogs" :key="log" class="flex items-center gap-3 text-sm font-mono">
+                    <span class="text-purple-400">$</span>
+                    <span class="text-gray-300">{{ log }}</span>
+                  </div>
+                </div>
+                <div class="mt-4 flex items-center gap-2 text-sm">
+                  <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                  <span class="text-green-400">System Ready</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 bg-[#25D366]/10 text-[#25D366] px-4 py-2 rounded-full text-sm font-medium mb-4">Harga</div>
+          <h2 class="text-3xl md:text-5xl font-bold mb-4">Pilih Paket</h2>
+          <p class="text-gray-400 max-w-2xl mx-auto">Dapatkan akses penuh ke semua fitur Mesin-WA. Update & support included.</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div v-for="(pkg, i) in packages" :key="i" class="gradient-card p-8 rounded-2xl pricing-card relative" :class="{ 'pricing-popular': pkg.popular }">
+            <div v-if="pkg.popular" class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#25D366] text-black text-xs font-bold px-4 py-1 rounded-full">Paling Laris</div>
+            <div class="text-center mb-6">
+              <div class="text-4xl mb-2">{{ pkg.icon }}</div>
+              <h3 class="text-xl font-bold">{{ pkg.name }}</h3>
+              <p class="text-sm text-gray-400 mt-1">{{ pkg.subtitle }}</p>
+              <div class="mt-6">
+                <span class="text-4xl font-extrabold">{{ pkg.price }}</span>
+                <span class="text-gray-400 text-sm">/lifetime</span>
+              </div>
+            </div>
+            <ul class="space-y-3 mb-8">
+              <li v-for="f in pkg.features" :key="f" class="flex items-center gap-3 text-sm">
+                <span class="text-[#25D366]">✓</span>
+                <span class="text-gray-300">{{ f }}</span>
+              </li>
+            </ul>
+            <a :href="pkg.buyLink" class="block text-center w-full py-3 rounded-xl text-sm font-semibold transition-all" :class="pkg.popular ? 'btn-primary' : 'border border-white/20 hover:bg-white/5'">
+              {{ pkg.cta }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-24 bg-[#0a0f1a]">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 bg-[#25D366]/10 text-[#25D366] px-4 py-2 rounded-full text-sm font-medium mb-4">FAQ</div>
+          <h2 class="text-3xl md:text-5xl font-bold mb-4">Pertanyaan Umum</h2>
+        </div>
+        <div class="space-y-4">
+          <div v-for="(faq, i) in faqs" :key="i" class="gradient-card rounded-xl overflow-hidden">
+            <button @click="toggleFaq(i)" class="w-full flex items-center justify-between p-5 text-left">
+              <span class="font-medium">{{ faq.q }}</span>
+              <svg class="w-5 h-5 text-gray-400 transition-transform" :class="{ 'rotate-180': faq.open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div v-show="faq.open" class="px-5 pb-5 text-sm text-gray-400 leading-relaxed">
+              {{ faq.a }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+        <!-- Download -->
+    <section id="download" class="py-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 bg-[#25D366]/10 text-[#25D366] px-4 py-2 rounded-full text-sm font-medium mb-4">Download</div>
+          <h2 class="text-3xl md:text-5xl font-bold mb-4">Download Mesin-WA</h2>
+          <p class="text-gray-400 max-w-2xl mx-auto">Dapatkan source code APK dan mulai kelola banyak WhatsApp sekarang.</p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <!-- Card 1: Source Code -->
+          <div class="gradient-card p-8 rounded-2xl text-center">
+            <div class="text-5xl mb-4">📦</div>
+            <h3 class="text-xl font-bold mb-2">Source Code APK</h3>
+            <p class="text-sm text-gray-400 mb-2">⚠️ <span class="text-yellow-400">Ini adalah source code project, BUKAN APK install langsung.</span></p>
+            <p class="text-sm text-gray-400 mb-2">📱 <span class="text-blue-400">Cara termudah:</span> Push ke GitHub → Actions → Download APK</p>
+            <p class="text-sm text-gray-400 mb-6">Atau buka di Android Studio di PC/Laptop, klik Run.</p>
+            <p class="text-sm text-gray-400 mb-6">Compile dulu di Android Studio atau pakai GitHub Actions untuk menghasilkan file .apk.</p>
+            <div class="space-y-2 text-left mb-6">
+              <div class="flex items-center gap-2 text-sm text-gray-300"><span class="text-[#25D366]">✓</span> Android Studio Project (Java)</div>
+              <div class="flex items-center gap-2 text-sm text-gray-300"><span class="text-[#25D366]">✓</span> Material3 UI + Bottom Navigation</div>
+              <div class="flex items-center gap-2 text-sm text-gray-300"><span class="text-[#25D366]">✓</span> Multi Session + Pairing Code</div>
+              <div class="flex items-center gap-2 text-sm text-gray-300"><span class="text-[#25D366]">✓</span> Blast Broadcast + Jadwal</div>
+              <div class="flex items-center gap-2 text-sm text-gray-300"><span class="text-[#25D366]">✓</span> Dashboard Statistik</div>
+            </div>
+            <a href="https://mesin-wa.anyclaw.store/mesin-wa-source.zip" download class="btn-primary w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-base font-semibold">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Download Source Code (90 KB)
+            </a>
+          </div>
+          <!-- Card 2: Cara Build -->
+          <div class="gradient-card p-8 rounded-2xl">
+            <div class="text-5xl mb-4">🔧</div>
+            <h3 class="text-xl font-bold mb-2">Cara Build APK</h3>
+            <p class="text-sm text-gray-400 mb-6">Ikuti langkah-langkah ini untuk build APK sendiri.</p>
+            <ol class="space-y-4">
+              <li v-for="(step, i) in buildSteps" :key="i" class="flex gap-3 text-sm">
+                <span class="w-6 h-6 rounded-full gradient-primary flex items-center justify-center text-xs font-bold shrink-0">{{ i + 1 }}</span>
+                <span class="text-gray-300">{{ step }}</span>
+              </li>
+              <div class="mt-4 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
+                <p class="text-xs text-yellow-400 font-semibold mb-1">💡 Cara Cepat: GitHub Actions</p>
+                <p class="text-xs text-gray-400">Push source code ke GitHub, APK otomatis di-build. Download dari Actions tab → artifacts.</p>
+              </div>
+            </ol>
+            <div class="mt-6 p-3 rounded-xl bg-white/5 text-xs font-mono text-gray-400">
+              <div>$ chmod +x gradlew</div>
+              <div>$ ./gradlew assembleRelease</div>
+              <div class="text-gray-500 mt-1"># APK: app/build/outputs/apk/release/</div>
+            </div>
+          </div>
+        </div>
+        <!-- Apa yang didapat -->
+        <div class="mt-12 max-w-4xl mx-auto">
+          <div class="gradient-card p-8 rounded-2xl">
+            <h3 class="text-xl font-bold mb-6 text-center">Yang Kamu Dapatkan</h3>
+            <div class="grid md:grid-cols-3 gap-4 text-center">
+              <div v-for="item in downloadIncludes" :key="item" class="p-4 rounded-xl bg-white/5">
+                <div class="text-2xl mb-2">{{ item.icon }}</div>
+                <div class="text-sm font-semibold">{{ item.title }}</div>
+                <div class="text-xs text-gray-400 mt-1">{{ item.desc }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<!-- CTA -->
+    <section class="py-24">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="gradient-card rounded-3xl p-12 md:p-16 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-[#25D366]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+          <div class="relative z-10">
+            <h2 class="text-3xl md:text-5xl font-bold mb-4">Siap Kelola Banyak WhatsApp?</h2>
+            <p class="text-gray-400 mb-8 max-w-xl mx-auto">Dapatkan Mesin-WA sekarang dan kelola banyak akun WhatsApp dengan mudah dalam satu aplikasi.</p>
+            <a href="#pricing" class="btn-primary px-8 py-3.5 rounded-full text-base font-semibold inline-flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+              </svg>
+              Beli Sekarang
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-md gradient-primary flex items-center justify-center text-white font-bold text-[10px]">W</div>
+            <span class="font-semibold text-sm">Mesin-WA <span class="text-[#25D366]">Pro</span></span>
+          </div>
+          <div class="flex items-center gap-6 text-sm text-gray-500">
+            <a href="#" class="hover:text-gray-300">Terms</a>
+            <a href="#" class="hover:text-gray-300">Privacy</a>
+            <a href="#" class="hover:text-gray-300">Contact</a>
+          </div>
+          <div class="text-sm text-gray-500">© 2026 Mesin-WA. All rights reserved.</div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          scrolled: false,
+          ],
+          buildSteps: [
+            'Download & extract source code ZIP',
+            'Buka folder di Android Studio',
+            'Tunggu Gradle sync selesai',
+            'Sambungkan HP / buka emulator',
+            'Klik Run ▶ atau Build → Build APK',
+            'APK siap di-install!'
+          ],
+          downloadIncludes: [
+            { icon: '📱', title: 'APK Source', desc: 'Project Android Studio lengkap' },
+            { icon: '🎨', title: 'Material3 UI', desc: 'Modern & premium design' },
+            { icon: '💬', title: 'Multi Session', desc: 'Unlimited WhatsApp' },
+            { icon: '📨', title: 'Blast Engine', desc: 'Broadcast + jadwal' },
+            { icon: '🔗', title: 'Pairing Code', desc: 'Pair tanpa scan QR' },
+            { icon: '📞', title: 'IVASMS Ready', desc: 'Integrasi auto register' },
+          ],
+          mobileMenu: false,
+          navItems: [
+            { id: 'features', label: 'Fitur', href: '#features' },
+            { id: 'pricing', label: 'Harga', href: '#pricing' },
+            { id: 'faq', label: 'FAQ', href: '#faq' },
+            { id: 'download', label: 'Download', href: '#download' },
+          ],
+          mockSessions: [
+            { name: 'Bisnis Toko', number: '+62 812-xxxx-8901', emoji: '🏪', bg: 'bg-emerald-500/10', avatarBg: 'bg-emerald-500/20', online: true },
+            { name: 'Personal', number: '+62 821-xxxx-1379', emoji: '👤', bg: 'bg-blue-500/10', avatarBg: 'bg-blue-500/20', online: true },
+            { name: 'Marketing', number: '+62 877-xxxx-4523', emoji: '📢', bg: 'bg-purple-500/10', avatarBg: 'bg-purple-500/20', online: false },
+            { name: 'CS Support', number: '+62 896-xxxx-7788', emoji: '🎧', bg: 'bg-orange-500/10', avatarBg: 'bg-orange-500/20', online: true },
+          ],
+          stats: [
+            { value: '∞', label: 'Unlimited Sessions' },
+            { value: '50K+', label: 'Pesan/hari' },
+            { value: '99.9%', label: 'Uptime' },
+            { value: '4.9★', label: 'Rating' },
+          ],
+          features: [
+            { icon: '📱', title: 'Multi Session', desc: 'Kelola banyak nomor WhatsApp dalam satu aplikasi. Support pairing code tanpa scan QR.' },
+            { icon: '📨', title: 'Blast Broadcast', desc: 'Kirim pesan massal ke banyak kontak & grup sekaligus. Support teks, gambar, dokumen.' },
+            { icon: '🔗', title: 'Pairing Code', desc: 'Pairing dengan kode 8 digit, tidak perlu scan QR code. Cepat dan praktis.' },
+            { icon: '📊', title: 'Dashboard', desc: 'Monitor semua session realtime. Lihat status, pesan terkirim, dan aktivitas.' },
+            { icon: '🎨', title: 'Sticker Maker', desc: 'Buat stiker WhatsApp dari gambar. Kirim langsung ke chat mana pun.' },
+            { icon: '🤖', title: 'AI Chat', desc: 'Integrasi AI untuk auto-reply dan chat pintar. Support custom prompt.' },
+            { icon: '📞', title: 'IVASMS', desc: 'Beli nomor virtual & daftar WA auto. Dapat OTP tanpa HP fisik.' },
+            { icon: '🗓️', title: 'Jadwal Blast', desc: 'Atur jadwal pengiriman pesan massal. Kirim otomatis di waktu yang ditentukan.' },
+            { icon: '🔒', title: 'Private & Aman', desc: 'Data session tersimpan lokal. Tidak ada data yang bocor ke server kami.' },
+          ],
+          ivasmsFeatures: [
+            'Beli nomor virtual dari berbagai negara',
+            'Terima OTP WhatsApp otomatis',
+            'Auto daftar akun WhatsApp baru',
+            'Integrasi API key langsung dari aplikasi',
+            'Support banyak provider (IVASMS, dll)'
+          ],
+          ivasmsLogs: [
+            'ivasms.buyNumber("id")  → +6282129311379',
+            'ivasms.waitOtp("6282129311379") → "524871"',
+            'wa.register("6282129311379", "524871")',
+            'wa.pair("6282129311379")  → "ABCD-1234" ✅'
+          ],
+          packages: [
+            {
+              icon: '🚀', name: 'Starter', subtitle: 'Untuk pemula', price: 'Rp 50K',
+              features: ['5 Multi Session', 'Blast Broadcast', 'Pairing Code', 'Dashboard', 'Update 1 bulan'],
+              cta: 'Pilih Starter', popular: false, buyLink: '#'
+            },
+            {
+              icon: '⚡', name: 'Pro', subtitle: 'Paling populer', price: 'Rp 100K',
+              features: ['Unlimited Session', 'Blast Broadcast', 'Pairing Code', 'IVASMS Integration', 'AI Chat', 'Jadwal Blast', 'Update 6 bulan', 'Support Prioritas'],
+              cta: 'Pilih Pro', popular: true, buyLink: '#'
+            },
+            {
+              icon: '👑', name: 'VIP', subtitle: 'Untuk power user', price: 'Rp 250K',
+              features: ['Unlimited Session', 'All Fitur Pro', 'Source Code APK', 'Reskin & Rebrand', 'Custom Fitur', 'Update Lifetime', 'Support 24/7'],
+              cta: 'Pilih VIP', popular: false, buyLink: '#'
+            }
+          ],
+          faqs: [
+            { q: 'Apa itu Mesin-WA?', a: 'Mesin-WA adalah aplikasi Android untuk mengelola banyak akun WhatsApp dalam satu perangkat. Cocok untuk bisnis, marketing, dan manajemen komunikasi.', open: false },
+            { q: 'Apakah perlu root/jailbreak?', a: 'Tidak perlu. Aplikasi berjalan di Android standar (minimal Android 7.0). Tidak perlu root atau akses khusus.', open: false },
+            { q: 'Apakah akun WhatsApp saya aman?', a: 'Sangat aman. Aplikasi menggunakan WhatsApp Multi-Device resmi. Data session disimpan di perangkat lokal Anda, tidak ada yang dikirim ke server kami.', open: false },
+            { q: 'Bagaimana cara pairing?', a: 'Cukup masukkan nomor HP, aplikasi akan generate pairing code 8 digit. Buka WhatsApp di HP → Ketuk 3 titik → Perangkat tertaut → Ketuk kode 8 digit. Selesai!', open: false },
+            { q: 'Apa itu IVASMS dan bagaimana cara kerjanya?', a: 'IVASMS adalah layanan penyedia nomor virtual untuk menerima SMS/OTP. Dengan integrasi ini, kamu bisa beli nomor virtual, daftar WhatsApp, dan pairing langsung dari aplikasi.', open: false },
+            { q: 'Apakah bisa digunakan di emulator?', a: 'Bisa. Aplikasi berjalan normal di Android emulator seperti BlueStacks, Nox, atau LDPlayer. Cocok untuk manajemen di PC.', open: false },
+            { q: 'Bagaimana cara update aplikasi?', a: 'Update akan dikirimkan melalui grup/chat. Cukup download APK versi terbaru dan install di atas versi lama. Data session tetap aman.', open: false },
+          ]
+        }
+      },
+      methods: {
+        toggleFaq(i) {
+          this.faqs[i].open = !this.faqs[i].open
+        }
+      },
+      mounted() {
+        window.addEventListener('scroll', () => {
+          this.scrolled = window.scrollY > 50
+        })
+      }
+    })
+    app.mount('#app')
+  </script>
+</body>
+</html>

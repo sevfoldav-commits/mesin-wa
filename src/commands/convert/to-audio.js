@@ -1,17 +1,29 @@
-import { toAudio } from "../../lib/lib.convert.js"
+import { toAudio } from '../../lib/lib.convert.js'
+import { command } from '../../utils/command-builder.js'
 
+export default command({
+  name: 'toaudio',
+  aliases: ['tomp3', 'toogg'],
+  type: 'convert',
+  desc: 'Convert video to audio',
+  isMedia: true,
+  execute: async ({ hisoka, m, quoted }) => {
+    if (!/video|audio/i.test(quoted.mime || '')) {
+      return m.reply(`Not Supported Mime "${quoted.mime || '-'}"\n\nReply video with caption toaudio`)
+    }
 
-export default {
-    name: "toaudio",
-    aliases: ["tomp3", "toogg"],
-    type: 'convert',
-    desc: "Convert video to audio",
-    execute: async({ hisoka, m, quoted }) => {
-        if (!/video|audio/i.test(quoted.mime)) return m.reply(`Not Supported Mime "${quoted.mime}"\n\nReply video with caption #toaudio`)
-        m.reply("wait")
-        let media = await quoted.downloadMedia()
-        let audio = await toAudio(media, 'mp4')
-        hisoka.sendMessage(m.from, audio, { mimetype: "audio/mp4",asDocument: true, fileName: `To Audio ${hisoka.info?.pushname}.mp3`, quoted: m })
-    },
-    isMedia: true
-}
+    await m.reply('⏱ Mengkonversi...')
+
+    try {
+      const media = await quoted.download()
+      const audio = await toAudio(media, 'mp4')
+      await hisoka.sendMessage(m.from, {
+        document: audio,
+        mimetype: 'audio/mp4',
+        fileName: `Audio-${Date.now()}.mp3`
+      }, { quoted: m })
+    } catch (e) {
+      m.reply(`❌ Error: ${e.message}`)
+    }
+  }
+})

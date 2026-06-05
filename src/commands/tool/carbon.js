@@ -1,23 +1,27 @@
-import axios from "axios"
+import axios from 'axios'
+import { command } from '../../utils/command-builder.js'
 
+export default command({
+  name: 'carbon',
+  aliases: ['carbons'],
+  type: 'tool',
+  desc: 'Create carbon code image from text',
+  example: 'Example: %prefix%command console.log("hello")',
+  execute: async ({ hisoka, m }) => {
+    if (!m.text) return m.reply('Masukkan kode yang ingin dijadikan gambar!')
 
-export default {
-    name: 'carbon',
-    aliases: ['carbon.now'],
-    type: 'tool',
-    desc: 'code heker',
-    example: "No Query?!\n\nExample : %prefix%command <html?",
-    execute: async({ hisoka, m }) => {
-        m.reply("wait")
-        let data = await axios({
-            url: 'https://carbonara.solopov.dev/api/cook',
-            method: 'post',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: { code: m.text },
-            responseType: 'arraybuffer'
-        })
-        hisoka.sendMessage(m.from, data?.data, { quoted: m })
+    await m.reply('⏱ Membuat karbon...')
+
+    try {
+      const { data } = await axios.post(
+        'https://carbonara.solopov.dev/api/cook',
+        { code: m.text },
+        { responseType: 'arraybuffer' }
+      )
+
+      await hisoka.sendMessage(m.from, { image: data }, { quoted: m })
+    } catch (e) {
+      m.reply(`❌ Error: ${e.message}`)
     }
-}
+  }
+})

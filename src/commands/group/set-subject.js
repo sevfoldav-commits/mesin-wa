@@ -1,15 +1,17 @@
-export default {
-    name: 'subject',
-    aliases: ['setsubject', 'set-subject'],
-    type: 'group',
-    desc: 'change subject group',
-    example: 'Ghost?\n\nExample : %prefix%command Hisoka Morrou',
-    execute: async({ m }) => {
-        let text = m.hasQuotedMsg && !m.text ? m.quoted.body : m.text
-        let chat = await m.getChat()
-        await chat.setSubject(text)
-    },
-    isGroup: true,
-    isAdmin: true,
-    isBotAdmin: true
-}
+import { command } from '../../utils/command-builder.js'
+
+export default command({
+  name: 'subject',
+  aliases: ['setsubject', 'set-subject'],
+  type: 'group',
+  desc: 'Change group subject/name\nExample: %prefix%command Nama Grup Baru',
+  isGroup: true,
+  isAdmin: true,
+  isBotAdmin: true,
+  execute: async ({ hisoka, m }) => {
+    const text = m.hasQuotedMsg && !m.text ? m.quoted.body : m.text
+    if (!text) return m.reply('Masukkan nama grup baru')
+    await hisoka.groupUpdateSubject(m.from, text)
+    m.reply(`✅ Nama grup diubah menjadi: ${text}`)
+  }
+})

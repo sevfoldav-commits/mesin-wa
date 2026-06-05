@@ -17,6 +17,9 @@ const limit = {
 export default {
    limit,
    APIs: {
+      ivasms: {
+         Key: "isi_api_key_kamu"  // Dapatkan di https://ivasms.com
+      },
       xzn: {
          URI: 'https://xzn.wtf',
          Key: "i dont know"

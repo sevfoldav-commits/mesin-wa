@@ -1,15 +1,35 @@
-export default {
-    name: 'instagram',
-    aliases: ['ig', 'igdl'],
-    type: 'download',
-    desc: 'downloader video and photo instagram',
-    example: 'No Urls?!\n\nExample : %prefix%command https://www.instagram.com/reel/CqIrJimDXtD/?igshid=NTc4MTIwNjQ2YQ==',
-    execute: async({ hisoka, m }) => {
-        let request = await (new api('xzn')).get('/api/igdl', { url: Func.isUrl(m.body)[0] })
-        if (request.data?.err) return m.reply("error")
-        for (let result of request.data.media) {
-            hisoka.sendMessage(m.from, result, { caption: request.data.caption })
+import { command } from '../../utils/command-builder.js'
+
+export default command({
+  name: 'instagram',
+  aliases: ['ig', 'igdl'],
+  type: 'download',
+  desc: 'Download video and photo Instagram',
+  example: 'No Urls?!\n\nExample : %prefix%command https://www.instagram.com/reel/...',
+  isLimit: true,
+  execute: async ({ hisoka, m }) => {
+    const url = Func.isUrl(m.body)[0]
+    if (!url) return m.reply('Masukkan link Instagram!')
+
+    await m.reply('⏱ Mengunduh...')
+
+    try {
+      const API = global.api || api
+      const request = await new API('xzn').get('/api/igdl', { url })
+      if (request.data?.err) return m.reply('❌ Gagal mengambil data')
+
+      const caption = request.data.caption ? `📷 *Instagram*\n\n${request.data.caption}` : ''
+
+      for (const media of request.data.media) {
+        const isVideo = /\.(mp4|mov|webm)/i.test(media)
+        if (isVideo) {
+          await hisoka.sendMessage(m.from, { video: { url: media }, caption }, { quoted: m })
+        } else {
+          await hisoka.sendMessage(m.from, { image: { url: media }, caption }, { quoted: m })
         }
-    },
-    isLimit: true
-}
+      }
+    } catch (e) {
+      m.reply(`❌ Error: ${e.message}`)
+    }
+  }
+})

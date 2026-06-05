@@ -1,37 +1,57 @@
-import { toAudio } from "../../lib/lib.convert.js"
+import { toAudio } from '../../lib/lib.convert.js'
+import { command } from '../../utils/command-builder.js'
 
+export default command({
+  name: 'tiktok',
+  aliases: ['tt', 'ttdl'],
+  type: 'download',
+  desc: 'Download Video and Audio Tiktok',
+  example: 'No Urls!\n\nExample : %prefix%command https://www.tiktok.com/@user/video/...',
+  isLimit: true,
+  execute: async ({ hisoka, m }) => {
+    const url = Func.isUrl(m.text)[0]
+    if (!url) return m.reply('Masukkan link TikTok!')
 
-export default {
-    name:"tiktok",
-    aliases: ["tt","ttdl"],
-    type: 'download',
-    desc: "Download Video and Audio Tiktok",
-    example: "No Urls!\n\nExample : %prefix%command https://www.tiktok.com/@flocki__/video/7158539658333392129",
-    execute: async({ hisoka, m }) => {
-        m.reply("wait")
-        let json = await Func.fetchJson(`https://api.tiklydown.me/api/download?url=${Func.isUrl(m.text)[0]}`)
-        if (json?.video?.noWatermark == undefined) return m.reply("error")
-        let text = `
-Tiktok Video and Audio Downloader
+    await m.reply('⏱ Mengunduh...')
 
-⭔ Author : ${json?.author?.name} (https://www.tiktok.com/@${json?.author?.unique_id})
-⭔ ID : ${json?.id}
-⭔ Title : ${json?.title}
-⭔ Created At : ${json?.created_at}
-⭔ Comment : ${json?.stats?.commentCount}
-⭔ Shared : ${json?.stats?.shareCount}
-⭔ Watched : ${json?.stats?.playCount}
-⭔ Saved : ${json?.stats?.saveCount}
-⭔ Duration : ${json?.video?.durationFormatted}
-⭔ Quality Video : ${json?.video?.ratio}
-⭔ Audio Title : ${json?.music?.title}
-⭔ Audio Author : ${json?.music?.author}
+    try {
+      const json = await Func.fetchJson(
+        `https://api.tiklydown.me/api/download?url=${url}`
+      )
+
+      if (!json?.video?.noWatermark) return m.reply('❌ Gagal mengambil data TikTok')
+
+      const text = `
+📱 *TikTok Downloader*
+
+👤 Author : ${json?.author?.name} (@${json?.author?.unique_id})
+🎵 Judul : ${json?.title || '-'}
+👁 Dilihat : ${json?.stats?.playCount || 0}
+💬 Komentar : ${json?.stats?.commentCount || 0}
+🔄 Dibagikan : ${json?.stats?.shareCount || 0}
+⏱ Durasi : ${json?.video?.durationFormatted || '-'}
 `
-        if (m.text.toLowerCase().endsWith("audio-original")) hisoka.sendMessage(m.from, json?.music?.play_url, { mimetype: "audio/mpeg", fileName: json?.music?.title + ".mp3", caption: text, asDocument: true, quoted: m })
-        else if (m.text.toLowerCase().endsWith("audio-video")) hisoka.sendMessage(m.from, (await toAudio(json?.video?.noWatermark, "mp4")), { mimetype: "audio/mpeg", asDocument: true, quoted: m })
-        else {
-            await hisoka.sendMessage(m.from, json?.video?.noWatermark, { caption: text, quoted: m })
-            hisoka.sendMessage(m.from, json?.music?.play_url, { mimetype: "audio/mpeg", fileName: json?.music?.title + ".mp3", caption: text, asDocument: true, quoted: m })
-        }
+
+      const noWatermark = json?.video?.noWatermark
+      const musicUrl = json?.music?.play_url
+      const musicTitle = json?.music?.title || 'audio'
+
+      if (m.text.toLowerCase().includes('audio') || m.text.toLowerCase().includes('mp3')) {
+        // Audio only
+        await hisoka.sendMessage(m.from, {
+          document: { url: musicUrl },
+          mimetype: 'audio/mpeg',
+          fileName: `${musicTitle}.mp3`
+        }, { quoted: m })
+      } else {
+        // Video with audio
+        await hisoka.sendMessage(m.from, {
+          video: { url: noWatermark },
+          caption: text
+        }, { quoted: m })
+      }
+    } catch (e) {
+      m.reply(`❌ Error: ${e.message}`)
     }
-}
+  }
+})

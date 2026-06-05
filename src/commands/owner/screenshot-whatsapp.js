@@ -1,12 +1,12 @@
-export default {
-    name: 'sswa',
-    aliases: ['listchat', 'listmsg'],
-    type: 'owner',
-    desc: "Screenshot homepage whatsapp web",
-    execute: async({ hisoka, m }) => {
-        await hisoka.mPage.setViewportSize({ width:961, height: 2000 })
-        let media = await hisoka.mPage.screenshot()
-        await hisoka.sendMessage(m.from, media, { quoted: m })
-    },
-    isOwner: true
-}
+import { command } from '../../utils/command-builder.js'
+
+export default command({
+  name: 'sswa',
+  aliases: ['listchat', 'listmsg'],
+  type: 'owner',
+  desc: '⚠️ Tidak tersedia di Baileys (tanpa browser)',
+  isOwner: true,
+  execute: async ({ hisoka, m }) => {
+    m.reply('❌ Fitur screenshot WhatsApp tidak tersedia setelah migrasi ke Baileys.\n\nBaileys berjalan tanpa browser (Puppeteer). Gunakan fitur lain yang tersedia.')
+  }
+})

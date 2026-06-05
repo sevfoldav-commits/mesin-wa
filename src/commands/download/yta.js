@@ -1,22 +1,42 @@
-export default {
-    name: "ytmp3",
-    aliases: ["ytaudio","yta"],
-    type: 'download',
-    desc: "Download Youtube Audio",
-    example: "No Urls!\n\nExample : %prefix%command https://www.youtube.com/watch?v=5ytnKggHwvY",
-    execute: async({ hisoka, m, config }) => {
-        m.reply("wait")
-        let request = await (new api('xzn')).get('/api/y2mate', { url: Func.isUrl(m.body)[0] })
-        if (request.data?.err) return m.reply("error")
-        let { id: vid, title, links, a: channel } = request.data
-        let a = links.audio[Object.keys(links.audio)[0]]
-        let b = await Func.fetchJson(a.url)
-        let { size, data } = await Func.getFile(b.dlink)
-        if (size >= config.limit.download.free && !m.isPremium) return m.reply("dlFree")
-        if (size >= config.limit.download.premium && !m.isVIP) return m.reply("dlPremium")
-        if (size >= config.limit.download.VIP) return m.reply("dlVIP")
-        let msg = await hisoka.sendMedia(m.from, thumbnail, m, { caption: title })
-        hisoka.sendMessage(m.from, { document: data, mimetype: "audio/mpeg", fileName: `${title} - ${channel}.mp3` }, { quoted: msg })
-    },
-    isLimit: true
-}
+import { command } from '../../utils/command-builder.js'
+
+export default command({
+  name: 'ytmp3',
+  aliases: ['ytaudio', 'yta'],
+  type: 'download',
+  desc: 'Download YouTube Audio',
+  example: 'No Urls!\n\nExample : %prefix%command https://www.youtube.com/watch?v=...',
+  isLimit: true,
+  execute: async ({ hisoka, m, config }) => {
+    const url = Func.isUrl(m.body)[0]
+    if (!url) return m.reply('Masukkan link YouTube!')
+
+    await m.reply('⏱ Mengambil data...')
+
+    try {
+      const API = global.api || api
+      const request = await new API('xzn').get('/api/y2mate', { url })
+      if (request.data?.err) return m.reply('❌ Gagal mengambil data video')
+
+      const { title, links, a: channel } = request.data
+      const audioLink = links.audio[Object.keys(links.audio)[0]]
+      const fetchData = await Func.fetchJson(audioLink.url)
+      const { size, data } = await Func.getFile(fetchData.dlink)
+
+      if (size >= config.limit.download.free && !m.isPremium) return m.reply(config.msg.dlFree)
+      if (size >= config.limit.download.premium && !m.isVIP) return m.reply(config.msg.dlPremium)
+      if (size >= config.limit.download.VIP) return m.reply(config.msg.dlVIP)
+
+      const caption = `🎵 *${title}*\n📢 ${channel || '-'}`
+
+      await hisoka.sendMessage(m.from, {
+        document: data,
+        mimetype: 'audio/mpeg',
+        fileName: `${title} - ${channel || 'Unknown'}.mp3`,
+        caption
+      }, { quoted: m })
+    } catch (e) {
+      m.reply(`❌ Error: ${e.message}`)
+    }
+  }
+})

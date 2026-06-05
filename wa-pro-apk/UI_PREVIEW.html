@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>WATools Pro - UI Preview</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+body { background: #e8e8e8; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+h1 { font-size: 20px; margin: 10px 0 20px; color: #075E54; }
+h2 { font-size: 14px; color: #666; margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Phone frame */
+.phone {
+  width: 375px;
+  min-height: 700px;
+  background: #f5f5f5;
+  border-radius: 40px;
+  padding: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  margin-bottom: 30px;
+  position: relative;
+}
+.phone-screen {
+  background: #f5f5f5;
+  border-radius: 32px;
+  overflow: hidden;
+  min-height: 676px;
+  position: relative;
+}
+
+/* Status bar */
+.status-bar {
+  background: #075E54;
+  color: white;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Toolbar */
+.toolbar {
+  background: #075E54;
+  color: white;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.toolbar h3 { font-size: 18px; font-weight: 600; }
+.toolbar-icons span { margin-left: 16px; font-size: 20px; cursor: default; }
+
+/* Tab Bar */
+.tab-bar {
+  background: white;
+  display: flex;
+  border-top: 1px solid #ddd;
+  position: sticky;
+  bottom: 0;
+}
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0 6px;
+  font-size: 10px;
+  color: #999;
+  cursor: default;
+}
+.tab-item.active { color: #075E54; }
+.tab-item .icon { font-size: 22px; display: block; margin-bottom: 2px; }
+
+/* Cards */
+.card {
+  background: white;
+  border-radius: 16px;
+  margin: 10px 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.card-title { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 12px; }
+
+/* Session item */
+.session {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: default;
+}
+.session:last-child { border-bottom: none; }
+.status-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.dot-green { background: #4CAF50; }
+.dot-red { background: #F44336; }
+.dot-yellow { background: #FFC107; }
+.session-info { flex: 1; }
+.session-phone { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+.session-status { font-size: 12px; color: #999; margin-top: 2px; }
+.session-cmds { font-size: 11px; color: #999; }
+
+/* Dashboard stats */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.stat-box { text-align: center; padding: 12px; }
+.stat-num { font-size: 28px; font-weight: 700; }
+.stat-num.green { color: #4CAF50; }
+.stat-num.teal { color: #075E54; }
+.stat-num.blue { color: #34B7F1; }
+.stat-num.orange { color: #FF9800; }
+.stat-label { font-size: 12px; color: #999; margin-top: 4px; }
+
+/* Buttons */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  margin-top: 10px;
+  cursor: default;
+  text-align: center;
+}
+.btn-primary { background: #075E54; color: white; }
+.btn-accent { background: #34B7F1; color: white; }
+.btn-success { background: #4CAF50; color: white; }
+.btn-danger { background: #F44336; color: white; }
+
+/* Blast */
+.form-group { margin-bottom: 12px; }
+.form-label { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; display: block; }
+.form-input, .form-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+}
+.form-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  min-height: 80px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Toggle */
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+.toggle-label { font-size: 14px; color: #333; }
+.toggle { width: 44px; height: 24px; background: #ccc; border-radius: 12px; position: relative; cursor: default; }
+.toggle.on { background: #075E54; }
+.toggle::after { content: ''; width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; }
+.toggle.on::after { left: 22px; }
+
+/* Pairing */
+.pairing-code {
+  background: #075E54;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  border-radius: 12px;
+  margin: 12px 0;
+}
+.pairing-code .code {
+  font-size: 36px;
+  letter-spacing: 8px;
+  font-weight: 700;
+}
+
+/* Badge */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Nav indicator */
+.page-indicator {
+  text-align: center;
+  padding: 8px;
+  font-size: 11px;
+  color: #999;
+}
+
+.section-title { 
+  padding: 16px 16px 4px; 
+  font-size: 14px; 
+  font-weight: 600; 
+  color: #666; 
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+</style>
+</head>
+<body>
+
+<h1>📱 WATools Pro — UI Preview</h1>
+<p style="color:#666; text-align:center; margin-bottom:20px; max-width:375px;">
+Tampilan APK yang akan dijual. <br>3 halaman utama: Sessions, Dashboard, Blast
+</p>
+
+<!-- ===== PAGE 1: SESSIONS ===== -->
+<div class="phone">
+  <div class="phone-screen">
+    <div class="status-bar">
+      <span>12:00</span>
+      <span>📶 🔋 100%</span>
+    </div>
+    <div class="toolbar">
+      <h3>WATools Pro</h3>
+      <div class="toolbar-icons">
+        <span>🔔</span>
+        <span>⚙️</span>
+      </div>
+    </div>
+
+    <div class="section-title">WhatsApp Sessions</div>
+
+    <div class="session">
+      <span class="status-dot dot-green"></span>
+      <div class="session-info">
+        <div class="session-phone">+62 821-2931-1379</div>
+        <div class="session-status">Connected • 2m ago</div>
+      </div>
+      <div class="session-cmds">142 cmd</div>
+    </div>
+    <div class="session">
+      <span class="status-dot dot-yellow"></span>
+      <div class="session-info">
+        <div class="session-phone">+62 812-3456-7890</div>
+        <div class="session-status">Connecting...</div>
+      </div>
+      <div class="session-cmds">0 cmd</div>
+    </div>
+    <div class="session">
+      <span class="status-dot dot-red"></span>
+      <div class="session-info">
+        <div class="session-phone">+62 858-7654-3210</div>
+        <div class="session-status">Expired</div>
+      </div>
+      <div class="session-cmds">23 cmd</div>
+    </div>
+
+    <div class="page-indicator">← Swipe →</div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <div class="tab-item active">
+        <span class="icon">💬</span>
+        Sessions
+      </div>
+      <div class="tab-item">
+        <span class="icon">📊</span>
+        Dashboard
+      </div>
+      <div class="tab-item">
+        <span class="icon">🔧</span>
+        Tools
+      </div>
+      <div class="tab-item">
+        <span class="icon">⚙️</span>
+        Settings
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE 2: DASHBOARD ===== -->
+<div class="phone">
+  <div class="phone-screen">
+    <div class="status-bar">
+      <span>12:00</span>
+      <span>📶 🔋 100%</span>
+    </div>
+    <div class="toolbar">
+      <h3>Dashboard</h3>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 Statistics</div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-num teal">3</div>
+          <div class="stat-label">Sessions</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num green">1</div>
+          <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num blue">165</div>
+          <div class="stat-label">Commands</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num orange">12h</div>
+          <div class="stat-label">Uptime</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ Quick Actions</div>
+      <div class="btn btn-primary">➕ Add New Session</div>
+      <div class="btn btn-accent">🔗 Pairing Code</div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item">
+        <span class="icon">💬</span>
+        Sessions
+      </div>
+      <div class="tab-item active">
+        <span class="icon">📊</span>
+        Dashboard
+      </div>
+      <div class="tab-item">
+        <span class="icon">🔧</span>
+        Tools
+      </div>
+      <div class="tab-item">
+        <span class="icon">⚙️</span>
+        Settings
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE 3: BLAST ===== -->
+<div class="phone">
+  <div class="phone-screen">
+    <div class="status-bar">
+      <span>12:00</span>
+      <span>📶 🔋 100%</span>
+    </div>
+    <div class="toolbar">
+      <h3>📨 Blast / Broadcast</h3>
+    </div>
+
+    <div class="card" style="margin-top: 12px;">
+      <div class="card-title">📋 Configuration</div>
+      
+      <div class="form-group">
+        <label class="form-label">Message Type</label>
+        <select class="form-select">
+          <option>Text Only</option>
+          <option>Text + Image</option>
+          <option>Text + Document</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Target</label>
+        <select class="form-select">
+          <option>All Contacts</option>
+          <option>All Groups</option>
+          <option>Upload CSV File</option>
+        </select>
+      </div>
+
+      <div class="toggle-row">
+        <span class="toggle-label">Send with Image</span>
+        <div class="toggle"></div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">Schedule (Delay)</span>
+        <div class="toggle on"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✏️ Message</div>
+      <textarea class="form-textarea" placeholder="Type your message here...">Halo 👋, ini pesan broadcast dari kami...</textarea>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⏳ Progress</div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+        <span style="font-size:14px; font-weight:600;">Status: Ready</span>
+      </div>
+      <div style="height:8px; background:#e0e0e0; border-radius:4px;">
+        <div style="width:0%; height:100%; background:#075E54; border-radius:4px;"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-top:12px;">
+        <div style="text-align:center; flex:1;">
+          <div style="font-size:24px; font-weight:700; color:#4CAF50;">0</div>
+          <div style="font-size:12px; color:#999;">Sent</div>
+        </div>
+        <div style="text-align:center; flex:1;">
+          <div style="font-size:24px; font-weight:700; color:#F44336;">0</div>
+          <div style="font-size:12px; color:#999;">Failed</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <div class="btn btn-success" style="flex:1;">▶ Start Blast</div>
+        <div class="btn btn-danger" style="flex:1;">⏹ Stop</div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item">
+        <span class="icon">💬</span>
+        Sessions
+      </div>
+      <div class="tab-item">
+        <span class="icon">📊</span>
+        Dashboard
+      </div>
+      <div class="tab-item active">
+        <span class="icon">🔧</span>
+        Tools
+      </div>
+      <div class="tab-item">
+        <span class="icon">⚙️</span>
+        Settings
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE 4: PAIRING ===== -->
+<div class="phone">
+  <div class="phone-screen">
+    <div class="status-bar">
+      <span>12:00</span>
+      <span>📶 🔋 100%</span>
+    </div>
+    <div class="toolbar">
+      <h3>🔗 Pairing Code</h3>
+    </div>
+
+    <div class="card" style="margin-top: 12px;">
+      <div class="card-title">Connect WhatsApp</div>
+      <p style="font-size:13px; color:#666; margin-bottom:16px;">Pair without QR scan — enter 8-digit code in WhatsApp</p>
+
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input class="form-input" type="text" placeholder="62812xxxxxx" value="6282129311379">
+      </div>
+
+      <div class="btn btn-accent">🔗 Generate Pairing Code</div>
+    </div>
+
+    <div class="card" style="background:#075E54; color:white;">
+      <div style="text-align:center; padding:8px 0;">
+        <div style="font-size:12px; opacity:0.8; margin-bottom:8px;">Your Pairing Code</div>
+        <div class="pairing-code">
+          <div style="font-size:14px; opacity:0.8;">Open WhatsApp → ⋮ → Linked Devices</div>
+          <div class="code">N8B3 KK9N</div>
+          <div style="font-size:12px; margin-top:8px; opacity:0.8;">Tap "Link a device" → enter this code</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item">
+        <span class="icon">💬</span>
+        Sessions
+      </div>
+      <div class="tab-item">
+        <span class="icon">📊</span>
+        Dashboard
+      </div>
+      <div class="tab-item active">
+        <span class="icon">🔧</span>
+        Tools
+      </div>
+      <div class="tab-item">
+        <span class="icon">⚙️</span>
+        Settings
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Tentang Flutter vs Android Java</h2>
+<div style="max-width: 750px; width: 100%; margin-bottom:40px;">
+<table style="width:100%; border-collapse:collapse; background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+<tr style="background:#075E54; color:white;">
+  <th style="padding:12px; text-align:left;">Aspek</th>
+  <th style="padding:12px; text-align:left;">Java (Sekarang)</th>
+  <th style="padding:12px; text-align:left;">Flutter</th>
+</tr>
+<tr style="border-bottom:1px solid #eee;">
+  <td style="padding:10px 12px; font-weight:600;">File size APK</td>
+  <td style="padding:10px 12px;">~3-5 MB</td>
+  <td style="padding:10px 12px;">~7-12 MB</td>
+</tr>
+<tr style="border-bottom:1px solid #eee;">
+  <td style="padding:10px 12px; font-weight:600;">UI Customization</td>
+  <td style="padding:10px 12px;">✅ Bagus (Material3)</td>
+  <td style="padding:10px 12px;">✅✅ Sangat bagus</td>
+</tr>
+<tr style="border-bottom:1px solid #eee;">
+  <td style="padding:10px 12px; font-weight:600;">Development speed</td>
+  <td style="padding:10px 12px;">🐢 Lebih lambat</td>
+  <td style="padding:10px 12px;">🚀 Hot reload, cepat</td>
+</tr>
+<tr style="border-bottom:1px solid #eee;">
+  <td style="padding:10px 12px; font-weight:600;">Cross platform</td>
+  <td style="padding:10px 12px;">❌ Android only</td>
+  <td style="padding:10px 12px;">✅ Android + iOS + Web</td>
+</tr>
+<tr>
+  <td style="padding:10px 12px; font-weight:600;">Skill requirement</td>
+  <td style="padding:10px 12px;">Java / Kotlin</td>
+  <td style="padding:10px 12px;">Dart (mudah dipelajari)</td>
+</tr>
+</table>
+</div>
+
+<div style="max-width: 375px; text-align:center; color:#999; font-size:12px; margin-bottom:40px;">
+Buka file ini di browser HP/PC untuk lihat tampilan real.<br>
+APK final akan tampil lebih mulus di Android asli.
+</div>
+
+</body>
+</html>

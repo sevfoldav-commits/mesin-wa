@@ -1,13 +1,14 @@
-export default {
-    name: 'invite',
-    aliases: ['linkgrup', 'linkgroup','linkgc'],
-    type: 'group',
-    desc: 'revoke invite group',
-    execute: async({ m }) => {
-        let chat = await m.getChat()
-        let code = await chat.getInviteCode()
-        await m.reply(`Link Group ${m.metadata.subject} :\n\n https://chat.whatsapp.com/` + code, { linkPreview: true })
-    },
-    isGroup: true,
-    isBotAdmin: true
-}
+import { command } from '../../utils/command-builder.js'
+
+export default command({
+  name: 'getinvite',
+  aliases: ['invite', 'linkgroup', 'linkgc'],
+  type: 'group',
+  desc: 'Get group invite link',
+  isGroup: true,
+  isBotAdmin: true,
+  execute: async ({ hisoka, m }) => {
+    const code = await hisoka.groupInviteCode(m.from)
+    m.reply(`🔗 *Link Grup*\n\nhttps://chat.whatsapp.com/${code}`)
+  }
+})

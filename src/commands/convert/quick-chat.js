@@ -1,56 +1,83 @@
-import { UploadFileUgu } from "../../lib/lib.convert.js"
-import fs from "fs"
-import axios from "axios"
+import { UploadFileUgu } from '../../lib/lib.convert.js'
+import fs from 'fs'
+import axios from 'axios'
+import { command } from '../../utils/command-builder.js'
 
+export default command({
+  name: 'fakechat',
+  aliases: ['fake-chat', 'qc', 'sqc'],
+  type: 'convert',
+  desc: 'Convert text to sticker with quote style\nUsage: %prefix%command teks|nama|reply teks',
+  execute: async ({ hisoka, m, quoted, prefix, command }) => {
+    const [a, b] = m.text.split('|')
+    let media, reply
+    const tempDir = './temp'
 
-export default {
-    name: "fakechat",
-    aliases: ["fake-chat", "qc", "sqc"],
-    type: 'convert',
-    desc: "Convert text to sticker",
-    execute: async({ hisoka, m, quoted, prefix, command }) => {
-        let [a, b] = m.text.split`|`
-        let media, reply
-        if (quoted?.isMedia) {
-            let fileName = await Func.getRandom(`${quoted?.mime?.split("/")[1]}`)
-            let upload = await UploadFileUgu(await quoted.downloadMedia(fileName))
-            media = { media: { url: upload?.url } }
-            fs.unlinkSync(`./temp/${fileName}`)
+    try {
+      // Handle quoted media
+      if (quoted?.isMedia && quoted.mime) {
+        const ext = quoted.mime.split('/')[1]
+        const fileName = Func.getRandom(ext)
+        const buffer = await quoted.download()
+        if (buffer) {
+          const upload = await UploadFileUgu(buffer, fileName)
+          if (upload?.url) media = { media: { url: upload.url } }
+          try { fs.unlinkSync(`${tempDir}/${fileName}`) } catch {}
         }
-        if (b && m.quoted.sender) {
-            reply = {
-                name: await (await hisoka.getContactById(m.quoted.sender)).pushname,
-                text: (b == "q") ? quoted.body.replace(prefix+command, "") : b,
-                chatId: 5,
-                id: 5
-            }
+      }
+
+      // Handle reply info
+      if (b && m.quoted?.sender) {
+        reply = {
+          name: m.quoted.pushName || m.quoted.sender.split('@')[0],
+          text: b === 'q' ? quoted.body.replace(prefix + command, '') : b,
+          chatId: 5,
+          id: 5
         }
-        m.reply("wait")
-        let jsonnya = {
-            type: "quoted",
-            format: "png",
-            backgroundColor: "#1b1e23",
-            messages: [
-                {
-                    avatar: true,
-                    from: {
-                        id: 8,
-                        name: b ? await (await hisoka.getContactById(m.sender)).pushname : await (await hisoka.getContactById(quoted.sender)).pushname,
-                        photo: {
-                            url: b ? await hisoka.getProfilePicUrl(m.sender).catch(() => 'https://i0.wp.com/telegra.ph/file/134ccbbd0dfc434a910ab.png') : await hisoka.getProfilePicUrl(quoted.sender).catch(() => 'https://i0.wp.com/telegra.ph/file/134ccbbd0dfc434a910ab.png'),
-                        }
-                    },
-                    ...media,
-                    text: m.text ? a : quoted.body.replace(prefix+command, ""),
-                    replyMessage: { ...reply },
-                },
-            ],
-        }
-        const post = await axios.post("https://bot.lyo.su/quote/generate",
-        jsonnya,{
-            headers: { "Content-Type": "application/json"},
-        })
-        let buffer = Buffer.from(post.data.result.image, "base64")
-        hisoka.sendMessage(m.from, buffer, { asSticker: true, quoted: m })
+      }
+
+      await m.reply('⏱')
+
+      // Get profile pictures
+      const defaultPic = 'https://i0.wp.com/telegra.ph/file/134ccbbd0dfc434a910ab.png'
+      const getPic = async (jid) => {
+        try { return await hisoka.profilePictureUrl(jid, 'image') } catch { return defaultPic }
+      }
+
+      const senderPic = await getPic(m.sender)
+      const quotedPic = m.quoted?.sender ? await getPic(m.quoted.sender) : defaultPic
+
+      const jsonnya = {
+        type: 'quoted',
+        format: 'png',
+        backgroundColor: '#1b1e23',
+        messages: [
+          {
+            avatar: true,
+            from: {
+              id: 8,
+              name: b
+                ? (m.pushName || m.sender.split('@')[0])
+                : (m.quoted?.pushName || m.quoted?.sender?.split('@')[0] || 'User'),
+              photo: { url: b ? senderPic : quotedPic }
+            },
+            ...(media || {}),
+            text: a || quoted.body.replace(prefix + command, ''),
+            replyMessage: reply || undefined
+          }
+        ]
+      }
+
+      const post = await axios.post(
+        'https://bot.lyo.su/quote/generate',
+        jsonnya,
+        { headers: { 'Content-Type': 'application/json' } }
+      )
+
+      const buffer = Buffer.from(post.data.result.image, 'base64')
+      await hisoka.sendMessage(m.from, { sticker: buffer }, { quoted: m })
+    } catch (e) {
+      m.reply(`❌ Error: ${e.message}`)
     }
-}
+  }
+})

@@ -1,26 +1,32 @@
 import axios from 'axios'
+import { command } from '../../utils/command-builder.js'
 
+export default command({
+  name: 'removebg',
+  aliases: ['rembg', 'nobg'],
+  type: 'tool',
+  desc: 'Remove background from image',
+  isMedia: { Image: true },
+  execute: async ({ hisoka, m, quoted }) => {
+    await m.reply('⏱ Menghapus background...')
 
-export default {
-    name: 'removebg',
-    aliases: ['rembg', 'nobg'],
-    type: 'tool',
-    desc: 'remove background image',
-    execute: async({ hisoka, m, quoted }) => {
-        let media = await quoted.downloadMedia()
-        let image = await removeBG(media)
-        hisoka.sendMessage(m.from, image, { quoted: m })
-    },
-    isMedia: {
-        Image: true
+    try {
+      const media = await quoted.download()
+      if (!media) return m.reply('❌ Gagal mendownload media')
+
+      const image = await removeBG(media)
+      await hisoka.sendMessage(m.from, { image }, { quoted: m })
+    } catch (e) {
+      m.reply(`❌ Error: ${e.message}`)
     }
-}
+  }
+})
 
-
-function removeBG(buffer) {
-    return new Promise(async (resolve, reject) => {
-        let file = await Func.getFile(buffer)
-        const { data } = await axios.post(`https://bgremover.zyro.com/v1/ai/background-remover`, { "image_data": `data:image/jpeg;base64,${file.data.toString("base64")}` })
-        resolve(Buffer.from(data.result.split`,`[1], "base64"))
-    })
+async function removeBG(buffer) {
+  const file = await Func.getFile(buffer)
+  const { data } = await axios.post(
+    'https://bgremover.zyro.com/v1/ai/background-remover',
+    { image_data: `data:image/jpeg;base64,${file.data.toString('base64')}` }
+  )
+  return Buffer.from(data.result.split(',')[1], 'base64')
 }
