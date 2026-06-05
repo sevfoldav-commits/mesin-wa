@@ -32,14 +32,14 @@ public class PairingActivity extends AppCompatActivity {
     }
 
     private void startPairing() {
-        String phone = etPhone.getText().toString().trim()
+        String phoneRaw = etPhone.getText().toString().trim()
             .replaceAll("[^0-9]", "");
 
-        if (phone.length() < 10) {
+        if (phoneRaw.length() < 10) {
             etPhone.setError("Min 10 digit");
             return;
         }
-        if (!phone.startsWith("62")) phone = "62" + phone.replaceFirst("^0", "");
+        final String phone = phoneRaw.startsWith("62") ? phoneRaw : "62" + phoneRaw.replaceFirst("^0", "");
 
         btnPair.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
