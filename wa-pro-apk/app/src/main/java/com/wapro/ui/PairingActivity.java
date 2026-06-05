@@ -52,7 +52,7 @@ public class PairingActivity extends AppCompatActivity {
             try {
                 Thread.sleep(2000);
                 // Demo pairing code
-                String code = generateDemoCode();
+                final String code = generateDemoCode();
 
                 runOnUiThread(() -> {
                     progressBar.setVisibility(View.GONE);
