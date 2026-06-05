@@ -94,7 +94,25 @@
                         android:layout_centerVertical="true" />
 
                     <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/swSchedule"
+                        android:id="@+id/swSchedule" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingVertical="4dp">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Auto Reply"
+                            android:textSize="14sp" />
+                        <Switch
+                            android:id="@+id/swAutoReply"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true" />
@@ -158,6 +176,17 @@
                     android:layout_marginTop="8dp"
                     android:orientation="horizontal">
 
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="File Path / URL"
+                        android:layout_marginTop="8dp">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etFile"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="14sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
                     <Button android:id="@+id/btnUploadFile"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="0dp"

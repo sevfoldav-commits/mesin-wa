@@ -72,6 +72,15 @@
                 android:textSize="16sp" />
 
             <Button
+                android:id="@+id/btnToolsBlast"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="@color/secondary"
+                android:text="📨 Blast Broadcast"
+                android:textAllCaps="false" />
+
+            <Button
                 android:id="@+id/btnToolsIvasms"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
