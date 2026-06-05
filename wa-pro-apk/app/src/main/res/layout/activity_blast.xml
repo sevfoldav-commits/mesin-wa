@@ -208,7 +208,7 @@
                     android:max="100"
                     android:progress="0"
                     android:visibility="gone"
-                    style="@style/Widget.Material3.ProgressBar.Horizontal" />
+                    style="?android:attr/progressBarStyleHorizontal" />
 
                 <TextView android:id="@+id/tvProgress"
                     android:layout_width="wrap_content"
