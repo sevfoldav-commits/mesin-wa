@@ -26,13 +26,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        sessionManager = SessionManager.getInstance(this);
+        try {
+            setContentView(R.layout.activity_main);
+            sessionManager = SessionManager.getInstance(this);
 
-        initViews();
-        setupBottomNav();
-        loadSessions();
-        updateDashboard();
+            initViews();
+            setupBottomNav();
+            loadSessions();
+            updateDashboard();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void initViews() {
