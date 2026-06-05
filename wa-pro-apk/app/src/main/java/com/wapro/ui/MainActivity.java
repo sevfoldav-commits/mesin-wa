@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.*;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -40,13 +41,18 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     private void initViews() {
-        rvSessions = findViewById(R.id.rvSessions);
-        rvSessions.setLayoutManager(new LinearLayoutManager(this));
+        try {
+            rvSessions = findViewById(R.id.rvSessions);
+            rvSessions.setLayoutManager(new LinearLayoutManager(this));
+        } catch (Exception e) {
+            android.util.Log.e("MesinWA", "rvSessions error", e);
+        }
 
         contentSessions = findViewById(R.id.contentSessions);
         contentDashboard = findViewById(R.id.contentDashboard);
         contentTools = findViewById(R.id.contentTools);
         contentSettings = findViewById(R.id.contentSettings);
+        android.util.Log.i("MesinWA", "Views: sessions=" + (contentSessions != null) + " dash=" + (contentDashboard != null) + " tools=" + (contentTools != null) + " settings=" + (contentSettings != null));
 
         tvTotalSessions = findViewById(R.id.tvTotalSessions);
         tvActiveSessions = findViewById(R.id.tvActiveSessions);
@@ -84,8 +90,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private void setupBottomNav() {
         BottomNavigationView nav = findViewById(R.id.bottomNav);
         if (nav != null) {
-            nav.setOnNavigationItemSelectedListener(this);
-            nav.setSelectedItemId(R.id.nav_sessions);
+            try {
+                nav.setOnNavigationItemSelectedListener(this);
+                nav.setSelectedItemId(R.id.nav_sessions);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            android.util.Log.e("MesinWA", "bottomNav is NULL!");
         }
     }
 
