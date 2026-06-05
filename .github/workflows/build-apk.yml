@@ -21,10 +21,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Accept SDK licenses & install platform
+      - name: Accept SDK licenses & install platform 35
         run: |
           yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses 2>&1 | tail -3
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platforms;android-34" "build-tools;34.0.0" 2>&1 | tail -5
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platforms;android-35" "build-tools;34.0.0" 2>&1 | tail -5
 
       - name: Build Debug APK
         working-directory: wa-pro-apk
